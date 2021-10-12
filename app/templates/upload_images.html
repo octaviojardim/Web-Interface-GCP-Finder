@@ -1,0 +1,187 @@
+
+<script>
+
+    // Get a reference to the progress bar, wrapper & status label
+    var progress2 = document.getElementById("progress2");
+    var progress_wrapper2 = document.getElementById("progress_wrapper2");
+    var progress_status2 = document.getElementById("progress_status2");
+  
+    // Get a reference to the 3 buttons
+    var upload_btn2 = document.getElementById("upload_btn2");
+    var loading_btn2 = document.getElementById("loading_btn2");
+    var cancel_btn2 = document.getElementById("cancel_btn2");
+  
+    // Get a reference to the alert wrapper
+    var alert_wrapper2 = document.getElementById("alert_wrapper2");
+  
+    // Get a reference to the file input element & input label 
+    var input2 = document.getElementById("file_input2");
+    var file_input_label2 = document.getElementById("file_input_label2");
+  
+    // Function to show alerts
+    function show_alert(message, alert) {
+  
+      alert_wrapper.innerHTML = `
+      <div id="alert" class="alert alert-${alert} alert-dismissible fade show" role="alert">
+        <span>${message}</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    `
+  
+    }
+  
+    // Function to upload file
+    function upload2(url) {
+  
+      // Reject if the file input is empty & throw alert
+      if (!input2.value) {
+  
+        show_alert("No file selected", "warning")
+  
+        return;
+  
+      }
+  
+      // Create a new FormData instance
+      var data2 = new FormData();
+  
+      // Create a XMLHTTPRequest instance
+      var request2 = new XMLHttpRequest();
+  
+      // Set the response type
+      request2.responseType = "json";
+  
+      // Clear any existing alerts
+      alert_wrapper2.innerHTML = "";
+  
+      // Disable the input during upload
+      input2.disabled = true;
+  
+      // Hide the upload button
+      upload_btn2.classList.add("d-none");
+  
+      // Show the loading button
+      loading_btn2.classList.remove("d-none");
+  
+      // Show the cancel button
+      cancel_btn2.classList.remove("d-none");
+  
+      // Show the progress bar
+      progress_wrapper2.classList.remove("d-none");
+  
+      // Get a reference to the file
+      var file2 = input2.files[0];
+  
+      // Get a reference to the filename
+      var filename2 = file2.name;
+  
+      // Get a reference to the filesize & set a cookie
+      var filesize2 = file2.size;
+      document.cookie = `filesize2=${filesize2}`;
+  
+      // Append the file to the FormData instance
+      data.append("file", file2);
+  
+      // request progress handler
+      request2.upload.addEventListener("progress2", function (e) {
+  
+        // Get the loaded amount and total filesize (bytes)
+        var loaded2 = e.loaded;
+        var total2 = e.total
+  
+        // Calculate percent uploaded
+        var percent_complete2 = (loaded2 / total2) * 100;
+  
+        // Update the progress text and progress bar
+        progress2.setAttribute("style", `width: ${Math.floor(percent_complete2)}%`);
+        progress_status2.innerText = `${Math.floor(percent_complete2)}% uploaded`;
+  
+      })
+  
+      // request load handler (transfer complete)
+      request2.addEventListener("load", function (e) {
+  
+        if (request2.status == 200) {
+  
+          show_alert(`${request2.response.message}`, "success");
+  
+        }
+        else {
+  
+          show_alert(`Error uploading file`, "danger");
+  
+        }
+  
+        reset2();
+  
+      });
+  
+      // request error handler
+      request2.addEventListener("error", function (e) {
+  
+        reset2();
+  
+        show_alert(`Error uploading file`, "warning");
+  
+      });
+  
+      // request abort handler
+      request2.addEventListener("abort", function (e) {
+  
+        reset2();
+  
+        show_alert(`Upload cancelled`, "primary");
+  
+      });
+  
+      // Open and send the request
+      request2.open("post", url);
+      request2.send(data2);
+  
+      cancel_btn2.addEventListener("click", function () {
+  
+        request2.abort();
+  
+      })
+  
+    }
+  
+    // Function to update the input placeholder
+    function input_filename2() {
+  
+      file_input_label2.innerText = input2.files[0].name;
+  
+    }
+  
+    // Function to reset the page
+    function reset2() {
+  
+      // Clear the input
+      input2.value = null;
+  
+      // Hide the cancel button
+      cancel_btn2.classList.add("d-none");
+  
+      // Reset the input element
+      input2.disabled = false;
+  
+      // Show the upload button
+      upload_btn2.classList.remove("d-none");
+  
+      // Hide the loading button
+      loading_btn2.classList.add("d-none");
+  
+      // Hide the progress bar
+      progress_wrapper2.classList.add("d-none");
+  
+      // Reset the progress bar state
+      progress2.setAttribute("style", `width: 0%`);
+  
+      // Reset the input placeholder
+      file_input_label2.innerText = "Select file";
+  
+    }
+  
+  </script>

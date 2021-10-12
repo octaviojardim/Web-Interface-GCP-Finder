@@ -1,0 +1,29 @@
+{% extends "public_template.html" %}
+
+{% block title %}GCP File Generator{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>Home</h1>
+      <hr>
+
+      <form action="/results" method="POST">
+
+        <div class="form-group">
+          <label>Borda a retirar da imagem:</label>
+          <input class="form-control" type="text" name="border">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Run</button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}

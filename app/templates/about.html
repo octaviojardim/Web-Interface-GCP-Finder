@@ -1,0 +1,29 @@
+{% extends "public_template.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block main %}
+
+
+<p class="text-justify ml-4 mr-4">
+    O GCP File Generator recebe como input:
+<ul>
+    <li>Uma pasta zip com as imagens a processar.</li>
+    <li>Um ficheiro de texto com as coordenadas dos pontos de controlo no formato "Latitude Longitude Altitude".</li>
+</ul>
+</p>
+<p class="text-justify ml-4 mr-4">
+    O programa irá gerar o correspondente ficheiro "gcp_list.txt" com a formatação necessária para o WebODM.
+    A primeira etapa é identificar as imagens que contêm um ponto de controlo daquelas que não contêm um ponto de
+    controlo. Após essa operação, o programa identifica o centro dos pontos de controlo nas imagens que foram selecionas
+    na etapa anterior e gera o ficheiro "gcp_list.txt" que irá conter a localização dos pontos de controlo em pixeis
+    para cada imagem.
+</p>
+<p class="text-justify ml-4 mr-4">
+    Atenção: O GCP File Generator apenas processa ArUco Markers da familia 4X4 com id's entre 0 e 49.
+</p>
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}
