@@ -77,6 +77,10 @@ def upload_file():
 
         file.save(os.path.join(app.config["GCP_FILE_PATH"], GCP_INPUT_FILENAME))
 
+        res = make_response(jsonify({"message": "File uploaded"}), 200)
+
+        return res
+
     return render_template("index.html")
 
 
