@@ -122,7 +122,7 @@ def gcp_finder(border, check):
 
     gcp_path = app.config["GCP_FILE_PATH"] + GCP_FILENAME
 
-    with open(gcp_path,"x") as f:
+    with open(gcp_path,"w") as f:
         for i in range(0,6):
             f.write("coordenadas gcp teste escrita\n")
     return 0
