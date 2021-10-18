@@ -15,9 +15,9 @@
 
         <label>Selecionar zip com as imagens</label>
 
-        <div class="form-group mb-3">
+        <div class="form-group mb-3 w-75">
           <div class="custom-file">
-            <input type="file" class="custom-file-input" name="file_input" id="file_input" oninput="input_filename();">
+            <input type="file"  class="custom-file-input" style="cursor:pointer" name="file_input" id="file_input" oninput="input_filename();">
             <label id="file_input_label" class="custom-file-label" for="image">Select file</label>
           </div>
         </div>
@@ -50,9 +50,9 @@
 
         <label>Selecionar ficheiro GCP </label>
 
-        <div class="form-group mb-3">
+        <div class="form-group mb-3 w-75">
           <div class="custom-file">
-            <input type="file" class="custom-file-input" name="file_input" id="file_input2" oninput="input_filename2();">
+            <input type="file" class="custom-file-input" style="cursor:pointer" name="file_input" id="file_input2" oninput="input_filename2();">
             <label id="file_input_label2" class="custom-file-label" for="image">Select file</label>
           </div>
         </div>
@@ -81,9 +81,9 @@
 
       <form action="/results" method="POST">
 
-        <div class="form-group mt-4">
+        <div class="form-group mt-4 w-75">
           <label for="exampleFormControlSelect1">Percentagem de borda da imagem a excluir</label>
-          <select class="form-control" id="exampleFormControlSelect1" name="border">
+          <select class="form-control" style="cursor:pointer" id="exampleFormControlSelect1" name="border">
             <option>5%</option>
             <option>10%</option>
             <option>15%</option>
