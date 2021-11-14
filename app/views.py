@@ -10,7 +10,7 @@ from flask import (
 )
 import os
 import zipfile
-import gcp_finder as gcp
+#import gcp_finder as gcp
 
 GCP_FILENAME = "gcp_list.txt"
 GCP_INPUT_FILENAME = "gcp.txt"
@@ -116,7 +116,7 @@ def about():
 def gcp_finder(border, check):
 
     #por a retornar true quando acabar com sucesso, false quando contrario
-    gcp.run(border,check)
+    #gcp.run(border,check)
     
     lista_de_GCP_fixos = {
         0: (41.399764282, -6.979935297, 745),
