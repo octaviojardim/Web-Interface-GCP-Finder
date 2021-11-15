@@ -246,15 +246,7 @@ def aruco_detect():
 
 
 def generate_gcp_file():
-    header = "WGS84\n"
-
-    if len(output_lines) < 1:
-        sys.exit("Cannot generate GCP File because there's no markers.")
-    # in unix systems
-    gcp_file_location = (os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')) + "/gcp_list.txt"
-    f = open(gcp_file_location, 'w+')
-    f.write(header)
-    f.writelines(output_lines)
+    return 0
 
 
 def save_images_to_folder(image_path):
