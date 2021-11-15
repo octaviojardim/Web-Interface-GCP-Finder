@@ -9,6 +9,7 @@ from flask import (
     abort,
 )
 import os
+import glob
 import zipfile
 #import gcp_finder as gcp
 
@@ -56,8 +57,17 @@ def upload_images():
         zip_file = zipfile.ZipFile(file_like_object)
         zip_file.extractall(app.config["IMAGES_PATH"])
 
-        app.config["IMAGES_FOLDER_FILENAME"] = os.path.splitext(file.filename)[0]
+        max = 0
+        size = 0
+        for file in glob.iglob(app.config["IMAGES_PATH"] + "*"):
+            size = os.stat(file).st_size
+            if size > max:
+                app.config.update(IMAGES_FOLDER_PATH = file)
+                max = size
+            
 
+        #app.config["IMAGES_FOLDER_FILENAME"] = os.path.splitext(file.filename)[0]
+        
         res = make_response(jsonify({"message": "File uploaded"}), 200)
 
         return res
@@ -110,6 +120,7 @@ def results():
 
 @app.route("/about")
 def about():
+    print(app.config)
     return render_template("about.html")
 
 
@@ -130,3 +141,6 @@ def gcp_finder(border, check):
         for i in range(0,6):
             f.write("coordenadas gcp teste escrita\n")
     return 0
+
+    
+        

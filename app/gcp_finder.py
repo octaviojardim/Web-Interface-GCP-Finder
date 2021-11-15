@@ -4,20 +4,21 @@ import sys
 import time
 import math
 import glob
+import json
 import shutil
 import exiftool
+from app import app
 import geopy.distance
 from cv2 import aruco
 from PIL import Image, ImageDraw
 from pygeodesy.sphericalNvector import LatLon
-
 
 # CONSTANTES
 lista_de_GCP_fixos = {}
 
 found = "Ponto de Controle encontrado"
 not_found = "Ponto de Controle NÃO encontrado"
-source_path = "/Users/octaviojardim/Desktop/source" + "/"
+source_path = app.config["IMAGES_FOLDER_PATH"]
 save_path = "/Users/octaviojardim/Desktop/images_selected" + "/"
 keywords = ["EXIF:Model", "MakerNotes:Yaw", "MakerNotes:CameraPitch", "XMP:RelativeAltitude", "File:ImageWidth",
             "File:ImageHeight", "EXIF:FocalLength", "EXIF:GPSLatitude", "EXIF:GPSLongitude", "EXIF:GPSLatitudeRef",
@@ -26,7 +27,7 @@ output_lines = []
 images_with_gcp = []
 image_list = []
 img_with_gcp = 0
-border = 0  # search gcp in (1-border)% of the image, remove border% border around the image
+border = 20  # search gcp in (1-border)% of the image, remove border% border around the image
 save_images = -1
 SENSOR_WIDTH = 0
 total_images = 0
@@ -36,6 +37,30 @@ image_height = 0
 focal_length = 0
 horizontal_angle = 0
 altitude = 0
+gcp_found = 0
+
+
+def save_statistic(n, stage):
+    global gcp_found
+    f = open('statistic.json', "r")
+    data = json.load(f)
+    f.close()
+
+    if stage == "meta":
+        data["Processed"] = n + 1
+        data["Total"] = total_images
+
+    elif stage == "aruco":
+        data["Processed_aruco"] = n + 1
+        data["Total_aruco"] = total_images
+
+    elif stage == "gcp_found":
+        gcp_found += 1
+        data["GCP_found"] = gcp_found
+
+    f = open('statistic.json', "w")
+    json.dump(data, f)
+    f.close()
 
 
 def read_gcp_file():
@@ -117,12 +142,10 @@ def get_corner_coodinates(centerLat, centerLong):
 def get_drone_info(drone):
     model = drone["EXIF:Model"]
 
-    if model == "FC6310":
-        return 0.0132
-    elif model == "FC7303":
-        return 0.0063
-    else:
-        return 0
+    f = open('drones_DB.json')
+    data = json.load(f)
+
+    return data[model]
 
 
 def get_coordinates(geotags):
@@ -199,9 +222,15 @@ def addLine(pixels, filename_, gcp_ids):
         n = m[0]
         gcp_lat, gcp_long, gcp_alt = get_gcp_info(n)
         # longitude, latitude, altitude, imagem_pixel_X, image_pixel_Y, image_name, gcp id
-        line = str(gcp_long) + " " + str(gcp_lat) + " " + str(gcp_alt) + " " + str(pixels[s][0][0]) + \
+        line = str(gcp_lat) + " " + str(gcp_long) + " " + str(gcp_alt) + " " + str(pixels[s][0][0]) + \
                " " + str(pixels[s][1][0]) + " " + img_name + " " + str(n) + "\n"
-        output_lines.append(line)
+
+        # write to file in unix systems
+        gcp_file_location = (os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')) + "/gcp_list.txt"
+        f = open(gcp_file_location, 'a')
+        f.write(line)
+        f.close()
+
         s = s + 1
 
 
@@ -239,14 +268,25 @@ def aruco_detect():
                 pixels = [c[:, 0].mean()], [c[:, 1].mean()]
                 vec.append(pixels)
             addLine(vec, image_filename, ids)
+            save_statistic(1, "gcp_found")
         else:
             print("Marker not found in image", image_list[k])
+        save_statistic(k, "aruco")
 
     print("Found", marker_found, "of", total_images, "markers")
 
 
-def generate_gcp_file():
-    return 0
+def write_gcp_file_header():
+
+    f = open("/Users/octaviojardim/Desktop/teste_upload_coord.txt", 'r')
+
+    header = f.readline()
+    f.close()
+
+    gcp_file_location = (os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')) + "/gcp_list.txt"
+    f = open(gcp_file_location, 'w+')
+    f.write(header)
+    f.close()
 
 
 def save_images_to_folder(image_path):
@@ -271,6 +311,8 @@ def run(margin, flag_save):
         image_list.append(filename)
 
     total_images = len(image_list)
+    save_statistic(-1, "meta")
+    save_statistic(-1, "aruco")
 
     with exiftool.ExifTool() as et:
         metadata = et.get_tags_batch(keywords, image_list)
@@ -311,19 +353,21 @@ def run(margin, flag_save):
             print("Distancia projetada:", round(distance * 1000, 2), "m")
             print(is_gcp_nearby((lat2, lon2), current_image))
             print()
+            save_statistic(i, "meta")
 
     if save_images == 1:
         for i in range(0, total_images):
             current_image = metadata[i]["SourceFile"]
             save_images_to_folder(current_image)
 
+    write_gcp_file_header()
     aruco_detect()
     end = time.time()
     print("Elapsed time", round(end - start, 1), "s")
-    generate_gcp_file()
-
 
 coords_1 = (32.651917, -16.941869)
 coords_2 = (32.651919280258994, -16.941869478180877)
 
 # print("GUESS ERROR", round(geopy.distance.geodesic(coords_1, coords_2).meters, 2), "m")
+
+run(20, 1)
