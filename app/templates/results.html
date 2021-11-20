@@ -7,23 +7,68 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h1>Home</h1>
-      <hr>
-
-      <form action="/results" method="POST">
-
-        <div class="form-group">
-          <label>Borda a retirar da imagem:</label>
-          <input class="form-control" type="text" name="border">
+      <h1>Statistics</h1>
+      <br>
+      <table class="table table-user-information" id="statistic_table">
+        <tbody>
+          <tr>
+            <td>Numero de imagens processadas usando meta informação</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Numero de imagens processadas pelo software ArUco</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Numero de imagens com pontos de controlo identificados</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <form action="/download" method="GET">
+        <div class="col text-center">
+          <button type="submit" class="btn btn-primary mt-4 mb-5" id="download_button">Download GCP File</button>
         </div>
-
-        <button type="submit" class="btn btn-primary">Run</button>
-
       </form>
     </div>
   </div>
 </div>
 
+<script>
+  $("#download_button").prop('disabled', true);
+  setTimeout(() => { }, 2000);
+
+  var count = 0
+  var interval_id = setInterval(function get_statistic() {
+
+    fetch("{{ url_for('static', filename='statistics.json') }}")
+      .then(response => response.json())
+      .then(data => {
+        var x = document.getElementById('statistic_table').rows
+        var y = x[0].cells
+        y[1].innerHTML = data.Processed + "/" + data.Total
+        y = x[1].cells
+        y[1].innerHTML = data.Processed_aruco + "/" + data.Total_aruco
+        y = x[2].cells
+        y[1].innerHTML = data.GCP_found
+        count += 1
+        if (count == 8) {
+          $("#download_button").prop('disabled', false);
+          clearInterval(interval_id)
+        }
+        /*if (data.Processed_aruco == data.Total_aruco) {
+          $("#download_button").prop('disabled', false);
+          clearInterval(interval_id)
+        }*/
+
+      }).catch(function () {
+        console.log("Promise Rejected");
+      });
+
+  }, 1000)
+
+
+</script>
 {% endblock %}
 
 {% block script %}

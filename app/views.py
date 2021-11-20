@@ -1,4 +1,6 @@
 from app import app
+from app import _Controller
+
 from flask import (
     render_template,
     request,
@@ -11,7 +13,7 @@ from flask import (
 import os
 import glob
 import zipfile
-#import gcp_finder as gcp
+
 
 GCP_FILENAME = "gcp_list.txt"
 GCP_INPUT_FILENAME = "gcp.txt"
@@ -53,27 +55,34 @@ def upload_images():
             print("File its not a zip file.")
             return redirect(request.url)
 
+        #files = glob.glob(app.config["IMAGES_PATH"])
+        #for f in files:
+        #    os.remove(f)
+
         file_like_object = file.stream._file
         zip_file = zipfile.ZipFile(file_like_object)
         zip_file.extractall(app.config["IMAGES_PATH"])
 
-        max = 0
-        size = 0
-        for file in glob.iglob(app.config["IMAGES_PATH"] + "*"):
-            size = os.stat(file).st_size
-            if size > max:
-                app.config.update(IMAGES_FOLDER_PATH = file)
-                max = size
-            
+        upload_images_path()
 
-        #app.config["IMAGES_FOLDER_FILENAME"] = os.path.splitext(file.filename)[0]
-        
         res = make_response(jsonify({"message": "File uploaded"}), 200)
 
         return res
 
     return render_template("index.html")
 
+
+def upload_images_path():
+    max = 0
+    size = 0
+    path_name = ""
+    for file in glob.iglob(app.config["IMAGES_PATH"] + "*"):
+        size = os.stat(file).st_size
+        if size > max:
+            path_name = file + "/"
+            app.config.update(IMAGES_FOLDER_PATH=path_name)
+            max = size
+    return path_name
 
 @app.route("/upload_file", methods=["GET", "POST"])
 def upload_file():
@@ -99,7 +108,14 @@ def upload_file():
 def results():
 
     if request.method == "POST":
+        print("primeiro")
+        print(app.config)
+        
+        if app.config["IMAGES_FOLDER_PATH"] == "":
+            upload_images_path()
 
+        print("segundo")
+        print(app.config)
         border = request.form.get("border")
         border = border[:-1]
 
@@ -108,39 +124,28 @@ def results():
         print("border", border)
         print("check", check)
 
-        gcp_finder(border, check)
+        gcp_find(border, check)
 
-        try:
-            return send_from_directory(app.config["GCP_FILE_PATH"], GCP_FILENAME, as_attachment=True)
-        except FileNotFoundError:
-            abort(404)
-
-    return render_template("results.html")
+        return render_template("results.html")
 
 
 @app.route("/about")
 def about():
-    print(app.config)
     return render_template("about.html")
 
 
-def gcp_finder(border, check):
+@app.route("/download", methods=["GET"])
+def download():
+    try:
+        return send_from_directory(
+            app.config["GCP_FILE_PATH"], GCP_FILENAME, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
 
-    #por a retornar true quando acabar com sucesso, false quando contrario
-    #gcp.run(border,check)
-    
-    lista_de_GCP_fixos = {
-        0: (41.399764282, -6.979935297, 745),
-        1: (41.399996133, -6.979810771, 756),
-        13: (89.393838443, -6.456447899, 745),
-    }
 
-    gcp_path = app.config["GCP_FILE_PATH"] + GCP_FILENAME
+def gcp_find(border, check):
 
-    with open(gcp_path,"w") as f:
-        for i in range(0,6):
-            f.write("coordenadas gcp teste escrita\n")
-    return 0
+    # por a retornar true quando acabar com sucesso, false quando contrario
 
-    
-        
+    control = _Controller._Controller(border,check)
+    control.run()

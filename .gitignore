@@ -4,3 +4,4 @@
 /app/images_unzip
 /app/gcp_files/gcp_list.txt
 /app/gcp_files/gcp.txt
+app/__pycache__/
