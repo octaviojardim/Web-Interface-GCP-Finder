@@ -14,6 +14,7 @@ from pygeodesy.sphericalNvector import LatLon
 from app import _GroundControlPoint
 from app import _Statistics
 from app import _Image
+import asyncio
 
 class _Controller:
     lista_de_GCP_fixos = {}
@@ -41,6 +42,7 @@ class _Controller:
 
 
     def run(self):
+        
         start = time.time()
 
         self.read_gcp_file()
@@ -57,6 +59,8 @@ class _Controller:
             metadata = et.get_tags_batch(self.keywords, self.image_list)
 
         for i in range(0, total_images):
+            print(total_images)
+            print(len(metadata))
             print("meta", metadata[i])
             if len(metadata[i]) != 12 or self.check_metainfo(
                     metadata[i]) is False:  # Its required 12 specific parameters to process the gcp location
