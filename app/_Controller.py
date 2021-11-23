@@ -14,31 +14,29 @@ from pygeodesy.sphericalNvector import LatLon
 from app import _GroundControlPoint
 from app import _Statistics
 from app import _Image
-import asyncio
 
 class _Controller:
-    lista_de_GCP_fixos = {}
-    images_with_gcp = []
-    image_list = []
+    
     found = "Ponto de Controle encontrado"
     not_found = "Ponto de Controle NÃO encontrado"
     keywords = ["EXIF:Model", "MakerNotes:Yaw", "MakerNotes:CameraPitch", "XMP:RelativeAltitude", "File:ImageWidth",
                 "File:ImageHeight", "EXIF:FocalLength", "EXIF:GPSLatitude", "EXIF:GPSLongitude", "EXIF"
                                                                                                  ":GPSLatitudeRef",
                 "EXIF:GPSLongitudeRef"]
-    save_images = -1
-    total_images = 0
-    SENSOR_WIDTH = 0
-    border = 0  # search gcp in (1-border)% of the image, remove border% border around the image
 
-    source_path = ""
-    save_path =  ""
-    missing = False
 
     def __init__(self, margin, flag_save):
-        self.border = int(margin)
+        self.border = int(margin) # search gcp in (1-border)% of the image, remove border% border around the image
         self.save_images = int(flag_save)
         self.source_path = app.config["IMAGES_FOLDER_PATH"]
+        self.total_images = 0
+        self.SENSOR_WIDTH = 0
+        self.lista_de_GCP_fixos = {}
+        self.images_with_gcp = []
+        self.image_list = []
+        self.save_path =  ""
+        self.missing = False
+        
 
 
     def run(self):

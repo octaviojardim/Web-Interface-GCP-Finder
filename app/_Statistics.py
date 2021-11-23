@@ -4,12 +4,11 @@ import json
 class _Statistics:
 
     STAT = "app/static/statistics.json"
-    total_images = 0
-    gcp_found = 0  # number of arUco markers found
-    img_with_gcp = 0  # number of images that probably contains a GCP
 
     def __init__(self, total_images):
         self.total_images = total_images
+        self.gcp_found = 0  # number of arUco markers found
+        self.img_with_gcp = 0  # number of images that probably contains a GCP
         self.init()
 
     def save_statistic(self, n, stage):
@@ -62,14 +61,11 @@ class _Statistics:
         json.dump(data, f)
         f.close()
 
-    @staticmethod
-    def get_total_images():
-        return _Statistics.total_images
+    def get_total_images(self):
+        return self.total_images
 
-    @staticmethod
-    def get_gcp_found():
-        return _Statistics.gcp_found
+    def get_gcp_found(self):
+        return self.gcp_found
 
-    @staticmethod
-    def get_img_with_gcp():
-        return _Statistics.img_with_gcp
+    def get_img_with_gcp(self):
+        return self.img_with_gcp

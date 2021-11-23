@@ -25,7 +25,7 @@
         
         <button onclick="upload('/upload_images');" id="upload_btn" class="btn btn-primary">Upload zip</button>
 
-        <div class="ml-2" id="serverImages" style="display:inline-block;">Ja existe uma pasta com imagens no servidor</div> 
+        <div class="ml-2" id="serverImages" style="display:inline-block;"></div> 
         
         <button class="btn btn-primary d-none" id="loading_btn" type="button" disabled>
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -123,9 +123,22 @@
 
 <script>
 
-//document.getElementById("serverImages").style.display = "none"
+fetch("{{ url_for('serverWithImages') }}")
+      .then(response => response.json())
+      .then(data => {
+        if (data.path == ""){
+          document.getElementById("serverImages").style.display = "none"
+        } else{
+          document.getElementById("serverImages").innerHTML = "Pasta '" + data.path + "' já se encontra no servidor."
+        }
+          
+        
+      }).catch(function () {
+        console.log("Progress bar promise rejected");
+      });
 
-document.getElementById("serverImages").innerHTML = "Texto a alterar"
+
+
 
 </script>
 
@@ -176,6 +189,8 @@ function check_input() {
 
   // Function to upload file
   function upload(url) {
+
+    document.getElementById("serverImages").style.display = "none"
 
     // Reject if the file input is empty & throw alert
     if (!input.value) {
