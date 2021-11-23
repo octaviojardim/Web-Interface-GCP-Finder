@@ -162,7 +162,7 @@ class _Controller:
                 line = str(gcp.get_lat()) + " " + str(gcp.get_long()) + " " + str(gcp.get_alt()) + " " + str(pixels[s][0][0]) + \
                        " " + str(pixels[s][1][0]) + " " + img_name + " " + str(n) + "\n"
 
-                gcp_file_location = app.config["GCP_FILE_PATH"] + "gcp_list.txt"
+                gcp_file_location = app.config["GCP_FILE_PATH"] + "/gcp_list.txt"
                 f = open(gcp_file_location, 'a')
                 f.write(line)
                 f.close()
@@ -192,13 +192,13 @@ class _Controller:
         shutil.copy(image_path, self.save_path + img_name + "." + img_extension)
 
     def write_gcp_file_header(self):
-        gcp_file_location = app.config["GCP_FILE_PATH"] + "gcp_list.txt"
+        gcp_file_location = app.config["GCP_FILE_PATH"] + "/gcp_list.txt"
         f = open(gcp_file_location, 'w+')
         f.write(self.lista_de_GCP_fixos[0].get_format_())
         f.close()
 
     def read_gcp_file(self):
-        f = open(app.config["GCP_FILE_PATH"] + "gcp.txt", 'r')
+        f = open(app.config["GCP_FILE_PATH"] + "/gcp.txt", 'r')
         header = f.readline()
         for ln in f:
             line = ln.split()

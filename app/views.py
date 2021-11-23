@@ -94,7 +94,11 @@ def upload_file():
             print("No filename")
             return redirect("/")
 
-        file.save(os.path.join(app.config["GCP_FILE_PATH"], GCP_INPUT_FILENAME))
+        path_save = os.path.join(app.config["GCP_FILE_PATH"], GCP_INPUT_FILENAME)
+
+        print("path saveee:",path_save)
+
+        file.save(path_save)
 
         res = make_response(jsonify({"message": "File uploaded"}), 200)
 
