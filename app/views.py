@@ -96,8 +96,6 @@ def upload_file():
 
         path_save = os.path.join(app.config["GCP_FILE_PATH"], GCP_INPUT_FILENAME)
 
-        print("path saveee:",path_save)
-
         file.save(path_save)
 
         res = make_response(jsonify({"message": "File uploaded"}), 200)
@@ -142,7 +140,7 @@ def download():
 
 @app.route("/gcp_run", methods=["GET"])
 def gcp_find():
-    # por a retornar true quando acabar com sucesso, false quando contrario
+
     control = _Controller._Controller(app.config["BORDER"],app.config["CHECK"])
     control.run()
 

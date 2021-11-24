@@ -57,9 +57,7 @@ class _Controller:
             metadata = et.get_tags_batch(self.keywords, self.image_list)
 
         for i in range(0, total_images):
-            print(total_images)
-            print(len(metadata))
-            print("meta", metadata[i])
+            
             if len(metadata[i]) != 12 or self.check_metainfo(
                     metadata[i]) is False:  # Its required 12 specific parameters to process the gcp location
                 self.missing = True
@@ -142,6 +140,8 @@ class _Controller:
                     print("Marker found!", self.image_list[k])
                     marker_found = marker_found + 1
                     stats.save_statistic(1, "gcp_found")
+                    if self.save_images == 1:
+                        self.save_images_to_folder(image_filename)
             else:
                 print("Marker not found in image", self.image_list[k])
 

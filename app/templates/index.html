@@ -54,7 +54,7 @@
         <label>Selecionar ficheiro GCP </label>
 
         <div class="form-group mb-3 w-75">
-          <div class="custom-file">
+          <div class="custom-file" >
             <label id="file_input_label2" class="custom-file-label" for="image">Select file</label>
             <input type="file" class="custom-file-input" style="cursor:pointer" name="file_input" id="file_input2" oninput="input_filename2();" required>
             <div class="invalid-feedback">Nenhum ficheiro foi carregado</div>
@@ -106,16 +106,11 @@
         </div>
 
         <button type="submit" class="btn btn-primary mt-4 mb-5">Run</button>
-
+        
       </form>
-
-
-
     </div>
   </div>
 </div>
-
-
 
 {% endblock %}
 
@@ -137,23 +132,8 @@ fetch("{{ url_for('serverWithImages') }}")
         console.log("Progress bar promise rejected");
       });
 
-
-
-
 </script>
 
-<script>
-
-
-function check_input() {
-
-  if( document.getElementById("file_input2").files.length == 0 ){
-    show_alert("No file selected", "warning")
-    return;
-}
-
-}
-</script>
 <script>
 
   // Get a reference to the progress bar, wrapper & status label
