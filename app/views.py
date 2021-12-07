@@ -1,5 +1,5 @@
 from app import app
-from app import _Controller
+from app import GCP_Finder
 
 from flask import (
     render_template,
@@ -141,7 +141,7 @@ def download():
 @app.route("/gcp_run", methods=["GET"])
 def gcp_find():
 
-    control = _Controller._Controller(app.config["BORDER"],app.config["CHECK"])
+    control = GCP_Finder.GCPFinder(app.config["BORDER"],app.config["CHECK"])
     control.run()
 
     res = make_response(jsonify({"message": "File generated"}), 200)

@@ -11,11 +11,11 @@ import exiftool
 import geopy.distance
 from cv2 import aruco
 from pygeodesy.sphericalNvector import LatLon
-from app import _GroundControlPoint
-from app import _Statistics
-from app import _Image
+from app import GroundControlPoint
+from app import Statistics
+from app import Image_
 
-class _Controller:
+class GCPFinder:
     
     found = "Ponto de Controle encontrado"
     not_found = "Ponto de Controle NÃO encontrado"
@@ -51,7 +51,7 @@ class _Controller:
 
         total_images = len(self.image_list)
 
-        stats = _Statistics._Statistics(total_images)
+        stats = Statistics._Statistics(total_images)
 
         with exiftool.ExifTool() as et:
             metadata = et.get_tags_batch(self.keywords, self.image_list)
@@ -76,7 +76,7 @@ class _Controller:
                 print("current image:", current_image)
                 print("Initial coordinates:", current_image.get_latitude(), current_image.get_longitude())
 
-                self.SENSOR_WIDTH = self.get_drone_info(_Image._Image.get_drone_model())
+                self.SENSOR_WIDTH = self.get_drone_info(Image_._Image.get_drone_model())
 
                 if self.SENSOR_WIDTH == 0:
                     sys.exit("Sensor Width is 0")
@@ -203,7 +203,7 @@ class _Controller:
         for ln in f:
             line = ln.split()
             if len(line) > 0:
-                gcp = _GroundControlPoint._GroundControlPoint(int(line[0]), float(line[2]), float(line[1]), float(line[3]), header)
+                gcp = GroundControlPoint._GroundControlPoint(int(line[0]), float(line[2]), float(line[1]), float(line[3]), header)
                 self.lista_de_GCP_fixos[gcp.get_id()] = gcp
 
     @staticmethod
@@ -283,7 +283,7 @@ class _Controller:
         elif longRef == "W":
             lon = -lon
 
-        return _Image._Image(pitch_angle, image_width, image_height, focal_length, horizontal_angle, altitude, filename, model,
+        return Image_._Image(pitch_angle, image_width, image_height, focal_length, horizontal_angle, altitude, filename, model,
                       lati, lon)
 
     def get_gcp_info(self, id__):
