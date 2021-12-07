@@ -210,8 +210,12 @@ class GCPFinder:
     def get_border_scale(b):
         if type(b) not in [int, float]:
             raise TypeError("The border percentage has to be an int or float")
-        if b <= 0:
+        if b < 0:
             raise TypeError("The border percentage has to be positive")
+        if b >= 100:
+            raise TypeError("The border percentage cannot be equal or greater than 100%")
+        elif b == 0:
+            return 1
         img_without_border = abs((b / 100) - 1)
         scale_raw = math.sqrt(img_without_border)
         scale = (abs(scale_raw - 1)) / 2
