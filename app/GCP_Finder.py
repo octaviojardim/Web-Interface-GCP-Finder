@@ -14,6 +14,7 @@ from pygeodesy.sphericalNvector import LatLon
 from app import GroundControlPoint
 from app import Statistics
 from app import Image_
+#import matplotlib.pyplot as plt
 
 class GCPFinder:
     
@@ -50,6 +51,9 @@ class GCPFinder:
             self.image_list.append(filename)
 
         total_images = len(self.image_list)
+
+        if total_images == 0:
+            sys.exit("Images directory is empty.")
 
         stats = Statistics._Statistics(total_images)
 
@@ -101,6 +105,38 @@ class GCPFinder:
         end = time.time()
         print("Elapsed time", round(end - start, 1), "s")
 
+
+    @staticmethod
+    def get_center_point(corners):
+        topLeft = corners[0]
+        topRight = corners[1]
+        bottomRight = corners[2]
+        bottomLeft = corners[3]
+
+        line1 = (topLeft, bottomRight)
+        line2 = (bottomLeft, topRight)
+
+        xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+        ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+        def det(a, b):
+            return a[0] * b[1] - a[1] * b[0]
+
+        div = det(xdiff, ydiff)
+
+        if div == 0:
+            print("Lines do not intersect.")
+            return [-1], [-1]
+
+        d = (det(*line1), det(*line2))
+        x = det(d, xdiff) / div
+        y = det(d, ydiff) / div
+
+        #plt.plot(x, y, ".", color='Red')
+
+        return [x], [y]
+
+
     def aruco_detect(self, stats):
         marker_found = 0
 
@@ -129,15 +165,32 @@ class GCPFinder:
             # Dictionary with 16 bits markers and ids from 0 to 49
             aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
             parameters = aruco.DetectorParameters_create()
+
+            parameters.cornerRefinementMaxIterations = 20#80
+            parameters.cornerRefinementMethod = 0#1
+            parameters.polygonalApproxAccuracyRate = 0.1#0.05
+            parameters.cornerRefinementWinSize = 5#20
+            parameters.cornerRefinementMinAccuracy =0.08 #0.05
+            parameters.perspectiveRemovePixelPerCell = 4#8
+            parameters.maxErroneousBitsInBorderRate = 0.04#0.02
+            parameters.adaptiveThreshWinSizeStep = 2  # alterei
+            parameters.adaptiveThreshWinSizeMax = 21#23
+            parameters.perspectiveRemoveIgnoredMarginPerCell = 0.29#0.4  # alterei
+            parameters.minMarkerPerimeterRate = 0.01#0.008  # alterei
+            
             corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
             if ids is not None:
                 for j in range(len(ids)):
                     c = corners[j][0]
-                    pixels = [c[:, 0].mean()], [c[:, 1].mean()]
-                    vec.append(pixels)
-                state = self.addLine(vec, image_filename, ids)
+                    center_point = self.get_center_point(c)
+                    vec.append(center_point)
+                    state = False
+
+                if ([-1], [-1]) not in vec:
+                    state = self.addLine(vec, image_filename, ids)
+
                 if state:
-                    print("Marker found!", self.image_list[k])
+                    print("Marker found!", self.image_list[k], "id:", ids)
                     marker_found = marker_found + 1
                     stats.save_statistic(1, "gcp_found")
                     if self.save_images == 1:
@@ -310,7 +363,8 @@ class GCPFinder:
                 find = True
                 print("gco found inside image")
                 stats.save_statistic(1, "contains_gcp")
-                self.images_with_gcp.append(image_path)
+                if image_path not in self.images_with_gcp:
+                    self.images_with_gcp.append(image_path)
 
         if find:
             return self.found
