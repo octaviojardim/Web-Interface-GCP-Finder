@@ -1,6 +1,6 @@
 Web Interface for GCP Finder
 
-Instruções de utilização:
+Setup:
 
 $ git clone https://github.com/octaviojardim/Web-Interface-GCP-Finder
 
