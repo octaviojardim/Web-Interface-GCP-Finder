@@ -14,7 +14,6 @@ from pygeodesy.sphericalNvector import LatLon
 from app import GroundControlPoint
 from app import Statistics
 from app import Image_
-#import matplotlib.pyplot as plt
 
 class GCPFinder:
     
@@ -46,7 +45,6 @@ class GCPFinder:
 
         self.read_gcp_file()
 
-        # upload all filenames
         for filename in glob.glob(self.source_path + '*'):
             self.image_list.append(filename)
 
@@ -77,7 +75,7 @@ class GCPFinder:
 
                 current_image = self.make_image(metadata[i])  # create a new instance of Class Image
 
-                print("current image:", current_image)
+                print("Current image:", current_image)
                 print("Initial coordinates:", current_image.get_latitude(), current_image.get_longitude())
 
                 self.SENSOR_WIDTH = self.get_drone_info(Image_._Image.get_drone_model())
@@ -94,8 +92,6 @@ class GCPFinder:
                 lat2, lon2 = destination.latitude, destination.longitude
                 print("Final coordinates:", lat2, lon2)
 
-                # INFO:
-                print("Distancia projetada:", round(distance * 1000, 2), "m")
                 print(self.is_gcp_nearby((lat2, lon2), current_image, stats))
                 print()
                 stats.save_statistic(1, "meta")
@@ -104,37 +100,6 @@ class GCPFinder:
         self.aruco_detect(stats)
         end = time.time()
         print("Elapsed time", round(end - start, 1), "s")
-
-
-    @staticmethod
-    def get_center_point(corners):
-        topLeft = corners[0]
-        topRight = corners[1]
-        bottomRight = corners[2]
-        bottomLeft = corners[3]
-
-        line1 = (topLeft, bottomRight)
-        line2 = (bottomLeft, topRight)
-
-        xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-        ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
-
-        def det(a, b):
-            return a[0] * b[1] - a[1] * b[0]
-
-        div = det(xdiff, ydiff)
-
-        if div == 0:
-            print("Lines do not intersect.")
-            return [-1], [-1]
-
-        d = (det(*line1), det(*line2))
-        x = det(d, xdiff) / div
-        y = det(d, ydiff) / div
-
-        #plt.plot(x, y, ".", color='Red')
-
-        return [x], [y]
 
 
     def aruco_detect(self, stats):
@@ -153,11 +118,11 @@ class GCPFinder:
             with exiftool.ExifTool() as met:
                 meta = met.get_tags_batch(self.keywords, self.images_with_gcp)
 
-        print("number_of_images", number_of_images)
         for k in range(0, number_of_images):
             vec = []
             image_meta = meta[k]
             image_filename = image_meta["SourceFile"]
+            state = False
 
             frame = cv2.imread(image_filename)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -166,25 +131,24 @@ class GCPFinder:
             aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
             parameters = aruco.DetectorParameters_create()
 
-            parameters.cornerRefinementMaxIterations = 20#80
-            parameters.cornerRefinementMethod = 0#1
-            parameters.polygonalApproxAccuracyRate = 0.1#0.05
-            parameters.cornerRefinementWinSize = 5#20
-            parameters.cornerRefinementMinAccuracy =0.08 #0.05
-            parameters.perspectiveRemovePixelPerCell = 4#8
-            parameters.maxErroneousBitsInBorderRate = 0.04#0.02
-            parameters.adaptiveThreshWinSizeStep = 2  # alterei
-            parameters.adaptiveThreshWinSizeMax = 21#23
-            parameters.perspectiveRemoveIgnoredMarginPerCell = 0.29#0.4  # alterei
-            parameters.minMarkerPerimeterRate = 0.01#0.008  # alterei
+            parameters.cornerRefinementMaxIterations = 20
+            parameters.cornerRefinementMethod = 0
+            parameters.polygonalApproxAccuracyRate = 0.1
+            parameters.cornerRefinementWinSize = 5
+            parameters.cornerRefinementMinAccuracy = 0.08
+            parameters.perspectiveRemovePixelPerCell = 4
+            parameters.maxErroneousBitsInBorderRate = 0.04
+            parameters.adaptiveThreshWinSizeStep = 2
+            parameters.adaptiveThreshWinSizeMax = 21
+            parameters.perspectiveRemoveIgnoredMarginPerCell = 0.4
+            parameters.minMarkerPerimeterRate = 0.008
             
             corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
             if ids is not None:
                 for j in range(len(ids)):
                     c = corners[j][0]
-                    center_point = self.get_center_point(c)
+                    center_point = [c[:, 0].mean()], [c[:, 1].mean()]
                     vec.append(center_point)
-                    state = False
 
                 if ([-1], [-1]) not in vec:
                     state = self.addLine(vec, image_filename, ids)
@@ -200,7 +164,7 @@ class GCPFinder:
 
             stats.save_statistic(1, "aruco")
 
-        print("Found", marker_found, "of", stats.get_total_images(), "markers")
+        print("\nFound", marker_found, "markers out of", stats.get_total_images(), "images uploaded.")
 
     def addLine(self, pixels, filename_, gcp_ids):
         sucess = False
@@ -223,17 +187,13 @@ class GCPFinder:
                 s += 1
                 sucess = True
             except KeyError:
-                print("Incorrect reading. Do not print.")
+                print("Incorrect reading. Do not print." + " False identification with ID ->", n, "in " + img_name)
             return sucess
 
     def check_metainfo(self, metainfo):
         correct_meta = True
-
         for word in self.keywords:
-            print("word", word)
             if word not in metainfo:
-                print("não tem metainfo:", word)
-                print("metainfo", metainfo)
                 correct_meta = False
 
         return correct_meta
@@ -287,15 +247,6 @@ class GCPFinder:
 
         final_distance = dist * ground_sample_distance  # real distance in meters
 
-        # DRAW TOP LEFT AND RIGHT CORNERS IN IMAGE
-        # shape = [(int(p[0]) - 2, int(p[1]) - 2), (int(p[0]) + 2, int(p[1]) + 2)]
-        # shape2 = [image_width - (int(p[0]) - 2), int(p[1]) - 2, image_width - (int(p[0]) + 2), int(p[1]) + 2]
-        # img = Image.open(image_list[0])
-        # img1 = ImageDraw.Draw(img)
-        # img1.rectangle(shape, fill="#ffff33", outline="red")
-        # img1.rectangle(shape2, fill="#ffff33", outline="red")
-        # img.show()
-
         return final_distance
 
     @staticmethod
@@ -309,11 +260,11 @@ class GCPFinder:
         gsdW = (image.get_altitude() * self.SENSOR_WIDTH) / (
                 image.get_focal_length() * image.get_image_width())  # m/pixel
 
-        print("Altitude: ", image.get_altitude(), "m")
-        print("Sensor width: ", self.SENSOR_WIDTH, "m")
-        print("Focal lenght: ", image.get_focal_length(), "m")
-        print("Image width: ", image.get_image_width(), "px")
-        print("Ground Sample Distance: ", gsdW * 100, "cm/pixel")
+        print("Altitude:", image.get_altitude(), "m")
+        print("Sensor width:", self.SENSOR_WIDTH, "m")
+        print("Focal lenght:", image.get_focal_length(), "m")
+        print("Image width:", image.get_image_width(), "px")
+        print("Ground Sample Distance:", gsdW * 100, "cm/pixel")
 
 
     @staticmethod
@@ -361,7 +312,6 @@ class GCPFinder:
 
             if p.isenclosedBy(b):
                 find = True
-                print("gco found inside image")
                 stats.save_statistic(1, "contains_gcp")
                 if image_path not in self.images_with_gcp:
                     self.images_with_gcp.append(image_path)
@@ -393,11 +343,6 @@ class GCPFinder:
                                                                                    img.get_horizontal_angle() + SW)
         top_left = geopy.distance.GeodesicDistance(kilometers=dist).destination(center_point_coord,
                                                                                 img.get_horizontal_angle() + NW)
-
-        print("top_right", top_right.latitude, top_right.longitude)
-        print("bottom_right", bottom_right.latitude, bottom_right.longitude)
-        print("bottom_left", bottom_left.latitude, bottom_left.longitude)
-        print("top_left", top_left.latitude, top_left.longitude)
 
         return top_right, bottom_right, bottom_left, top_left
 

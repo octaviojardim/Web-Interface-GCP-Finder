@@ -1,4 +1,4 @@
-SHELL := /usr/bin/bash
+SHELL := /bin/bash
 
 .ONESHELL:
 
@@ -9,7 +9,7 @@ install:
 	apt install exiftool
 
 run:
-	source ./env/bin/activate
+	. ./env/bin/activate
 	flask run		
 
 clean:
