@@ -16,5 +16,6 @@ $ make run
 
 $ http://127.0.0.1:5000
 
+Na pasta sample existem algumas imagens tiradas por um DJI Phantom 4 Pro que podem ser utilizadas para testes.
 
 FCT/UNL-LNEC
