@@ -217,7 +217,7 @@ class GCPFinder:
         for ln in f:
             line = ln.split()
             if len(line) > 0:
-                gcp = GroundControlPoint._GroundControlPoint(int(line[0]), float(line[2]), float(line[1]), float(line[3]), header)
+                gcp = GroundControlPoint._GroundControlPoint(int(line[0]), float(line[1]), float(line[2]), float(line[3]), header)
                 self.lista_de_GCP_fixos[gcp.get_id()] = gcp
 
     @staticmethod
