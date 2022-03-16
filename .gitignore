@@ -5,3 +5,4 @@
 /app/gcp_files/gcp.txt
 app/__pycache__/
 env/
+app/gcp_files/gcp_list.txt
